@@ -1,0 +1,143 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "01.c",
+      "file_type": "code",
+      "source_file": "ncurses/01.c",
+      "source_location": "L1",
+      "id": "ncurses_01_c",
+      "community": 1,
+      "norm_label": "01.c"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "ncurses/01.c",
+      "source_location": "L4",
+      "id": "ncurses_01_main",
+      "community": 1,
+      "norm_label": "main()"
+    },
+    {
+      "label": "game.c",
+      "file_type": "code",
+      "source_file": "Ping_pong/game.c",
+      "source_location": "L1",
+      "id": "ping_pong_game_c",
+      "community": 2,
+      "norm_label": "game.c"
+    },
+    {
+      "label": "start.c",
+      "file_type": "code",
+      "source_file": "Practice/start.c",
+      "source_location": "L1",
+      "id": "practice_start_c",
+      "community": 3,
+      "norm_label": "start.c"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "Ping_pong/game.c",
+      "source_location": "L4",
+      "community": 2,
+      "norm_label": "main()",
+      "id": "ping_pong_game_main"
+    },
+    {
+      "label": "start.c",
+      "file_type": "code",
+      "source_file": "Practice.c/start.c",
+      "source_location": "L1",
+      "community": 0,
+      "norm_label": "start.c",
+      "id": "practice_c_start_c"
+    },
+    {
+      "label": "game.c",
+      "file_type": "code",
+      "source_file": "Ping_pong.c/game.c",
+      "source_location": "L1",
+      "community": 4,
+      "norm_label": "game.c",
+      "id": "ping_pong_c_game_c"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "Practice.c/start.c",
+      "source_location": "L115",
+      "community": 0,
+      "norm_label": "main()",
+      "id": "practice_c_start_main"
+    },
+    {
+      "label": "max()",
+      "file_type": "code",
+      "source_file": "Practice.c/start.c",
+      "source_location": "L3",
+      "community": 0,
+      "norm_label": "max()",
+      "id": "practice_c_start_max"
+    }
+  ],
+  "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ncurses/01.c",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "ncurses_01_c",
+      "target": "ncurses_01_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Ping_pong/game.c",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "ping_pong_game_c",
+      "target": "ping_pong_game_main"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Practice.c/start.c",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "practice_c_start_c",
+      "target": "practice_c_start_main"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Practice.c/start.c",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "practice_c_start_c",
+      "target": "practice_c_start_max"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "Practice.c/start.c",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "practice_c_start_main",
+      "target": "practice_c_start_max"
+    }
+  ],
+  "hyperedges": [],
+  "built_at_commit": "b5a0af93b106d0bd8935bb3a3f08c83e23a1382c"
+}
