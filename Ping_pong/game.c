@@ -5,16 +5,18 @@
 //function prototypes
 void drawPaddle(int y, int x , int paddleHeight);
 void drawBall(int ballX, int ballY);
-void drawBoundary(int leftMargin, int rightMargin, int topMargin, int bottomMargin, int xMax, int yMax);
+void drawBoundary(int leftMargin, int rightMargin, int topMargin, int bottomWall, int xMax, int yMax);
 void ballMovement(int *ballX, int *ballY, int ballDirX, int ballDirY);
-void wallCollision(int *ballX, int *ballY, int *ballDirX, int *ballDirY, int leftMargin, int rightMargin, int topMargin, int bottomMargin, int xMax, int yMax);
+void wallCollision(int *ballX, int *ballY, int *ballDirX, int *ballDirY, int topMargin, int bottomWall);
 void ballCollisionWithUserPaddle(int *ballX, int *ballY, int *ballDirX, int x, int y, int paddleHeight);
-void aiPaddleMovement(int *ballX, int *ballY, int x0, int *y0, int paddleHeight, int topMargin, int bottomMargin, int yMax, int frameCounter, int aiSpeed);
+void aiPaddleMovement(int *ballX, int *ballY, int x0, int *y0, int paddleHeight, int topMargin, int bottomWall, int frameCounter, int aiSpeed);
 void aiPaddleCollision(int *ballX, int *ballY, int *ballDirX, int x0, int y0, int paddleHeight);
 void drawMenu(int yMax, int xMax);
 void handleMenuInput(int ch, int *aiSpeed, int *menuRunning);
-void userPaddleMovement(int ch, int *y, int topMargin, int bottomMargin, int yMax, int paddleHeight);
+void userPaddleMovement(int ch, int *y, int topMargin, int bottomWall, int paddleHeight);
 void quitGame(int ch, int *running);
+void userNameFun(char *userName,int yMax, int xMax, int *userNameInput);
+void scoring(int *ballX,int *ballY,int *ballDirX, int *ballDirY, int *userScore,int leftMargin,int rightMargin, int xMax,int yMax,int *aiScore, char *userName);
 
 
 //Main function
@@ -22,6 +24,8 @@ void quitGame(int ch, int *running);
 int main(int argc, char **argv){
 
     initscr();
+
+    curs_set(0);
     
     int paddleHeight = 4;
     
@@ -30,25 +34,28 @@ int main(int argc, char **argv){
     getmaxyx(stdscr ,yMax, xMax);
     
     //Border margins
-    int leftMargin = 6;
-    int rightMargin = 6;
-    int topMargin = 7;
-    int bottomMargin = 7;
+    int leftMargin = 26;
+    int rightMargin = 26;
+    int topMargin = 3;
+    int bottomMargin = 3;
     
+    //for bottom wall
+    int bottomWall = yMax - bottomMargin -2;
+
     // player paddle position
-    int y = yMax -(topMargin + bottomMargin)/2 - paddleHeight/2;
+    int y = yMax/2 - paddleHeight/2;
     int x = leftMargin+1;
     
     // ball position
-    int ballX = 19;
-    int ballY = 19;
+    int ballX = 30;
+    int ballY = 20;
     
     // ball direction
     int ballDirX = 1;
     int ballDirY = 1;
     
     //AI paddle position
-    int y0 = yMax -(topMargin + bottomMargin)/2 - paddleHeight/2;
+    int y0 = yMax/2 - paddleHeight/2;
     int x0 = xMax-rightMargin-1;
     
     //track of frames
@@ -62,6 +69,14 @@ int main(int argc, char **argv){
     
     //game Running
     int running = 1;
+
+    //scoring
+    int userScore = 0;
+    int aiScore = 0;
+
+    //user Name
+    char userName[20];
+    int userNameInput = 1;
     
     cbreak();
     noecho();
@@ -69,6 +84,18 @@ int main(int argc, char **argv){
     
     keypad(stdscr, TRUE);
     nodelay(stdscr, FALSE);
+
+    leaveok(stdscr, TRUE);
+
+    set_escdelay(25);
+
+    //user Name Input
+    while(userNameInput){
+        clear();
+        userNameFun(userName, yMax,xMax, &userNameInput);
+        refresh();
+
+    }
     
     // menu
     while(menuRunning){
@@ -81,7 +108,12 @@ int main(int argc, char **argv){
         handleMenuInput(ch, &aiSpeed, &menuRunning);
     }
     
-    nodelay(stdscr, TRUE);
+    nodelay(stdscr , TRUE);
+    
+    timeout(16);
+
+    //Bondary(outside for better fps)
+    drawBoundary(leftMargin, rightMargin, topMargin, bottomWall, xMax, yMax);
     
     while(running)
     {
@@ -90,31 +122,28 @@ int main(int argc, char **argv){
         clear();
         
         frameCounter++;
+
+        //wall collision
+        wallCollision(&ballX, &ballY, &ballDirX, &ballDirY, topMargin, bottomWall);
         
         // move ball
         ballMovement(&ballX, &ballY, ballDirX, ballDirY);
-        
-        //wall collision
-        wallCollision(&ballX, &ballY, &ballDirX, &ballDirY, leftMargin, rightMargin, topMargin, bottomMargin, xMax, yMax);
 
         // move paddle
-        userPaddleMovement(ch, &y, topMargin, bottomMargin, yMax, paddleHeight);
+        userPaddleMovement(ch, &y, topMargin, bottomWall,paddleHeight);
         
         // check for collision with paddle
         ballCollisionWithUserPaddle(&ballX, &ballY, &ballDirX, x, y, paddleHeight);
 
         // move AI paddle
-        aiPaddleMovement(&ballX, &ballY, x0, &y0, paddleHeight, topMargin, bottomMargin, yMax, frameCounter, aiSpeed);
+        aiPaddleMovement(&ballX, &ballY, x0, &y0, paddleHeight, topMargin, bottomWall, frameCounter, aiSpeed);
         
         //AI collision
         aiPaddleCollision(&ballX, &ballY, &ballDirX, x0, y0, paddleHeight);
-        
-        
-        clear();
-        
 
-        //Bondary
-        drawBoundary(leftMargin, rightMargin, topMargin, bottomMargin, xMax, yMax);
+        //scoring
+        scoring(&ballX,&ballY,&ballDirX, &ballDirY, &userScore,leftMargin, rightMargin, xMax,yMax, &aiScore, userName);
+        
         
         //draws ball
         drawBall(ballX, ballY);
@@ -128,7 +157,7 @@ int main(int argc, char **argv){
         // quit game
         quitGame(ch, &running);
         
-        napms(30);
+
         refresh();
     }
     
@@ -154,15 +183,15 @@ void drawBall(int ballX, int ballY){
 
 }
 
-void drawBoundary(int leftMargin, int rightMargin, int topMargin, int bottomMargin, int xMax, int yMax){
+void drawBoundary(int leftMargin, int rightMargin, int topMargin, int bottomWall, int xMax, int yMax){
 
     int i;
 
     for(i=leftMargin; i< xMax-rightMargin; i++){
         mvprintw(topMargin, i, "-");
-        mvprintw(yMax-bottomMargin, i, "-");
+        mvprintw(bottomWall, i, "-");
     }
-    for(i=topMargin; i< yMax-bottomMargin; i++){
+    for(i=topMargin; i< bottomWall; i++){
         mvprintw(i, leftMargin, "|");
         mvprintw(i, xMax-rightMargin, "|");
     }
@@ -175,18 +204,15 @@ void ballMovement(int *ballX, int *ballY, int ballDirX, int ballDirY){
     
 }
 
-void wallCollision(int *ballX, int *ballY, int *ballDirX, int *ballDirY, int leftMargin, int rightMargin, int topMargin, int bottomMargin, int xMax, int yMax){
-    if(*ballY <= topMargin || *ballY >= yMax-bottomMargin-1){
+void wallCollision(int *ballX, int *ballY, int *ballDirX, int *ballDirY, int topMargin, int bottomWall){
+    if(*ballY <= topMargin +1 || *ballY >= bottomWall -1){
         *ballDirY *= -1;
-    }
-    if(*ballX <= leftMargin || *ballX >= xMax-rightMargin-1){
-        *ballDirX *= -1;
     }
 }
 
 void ballCollisionWithUserPaddle(int *ballX, int *ballY, int *ballDirX, int x, int y, int paddleHeight){
     // check for collision with paddle
-    if (x+1 == *ballX && y <= *ballY && y + paddleHeight >= *ballY) {
+    if (x+1 == *ballX && y <= *ballY && y + paddleHeight -1 >= *ballY) {
         *ballDirX *= -1;
 
         // Move the ball to the right of the paddle to prevent it from getting stuck
@@ -196,14 +222,14 @@ void ballCollisionWithUserPaddle(int *ballX, int *ballY, int *ballDirX, int x, i
     }
 }
 
-void aiPaddleMovement(int *ballX, int *ballY,int x0, int *y0, int paddleHeight, int topMargin, int bottomMargin, int yMax, int frameCounter, int aiSpeed){
+void aiPaddleMovement(int *ballX, int *ballY,int x0, int *y0, int paddleHeight, int topMargin, int bottomWall, int frameCounter, int aiSpeed){
     // move AI paddle
     if(*ballX < x0-1){
         if(frameCounter %aiSpeed ==0){
-            if(*ballY>y0 && y0 + paddleHeight < yMax-bottomMargin-1){
+            if(*ballY>*y0 && *y0 + paddleHeight < bottomWall){
                 (*y0)++;
             }
-            if(*ballY<y0 && y0 > topMargin){
+            if(*ballY<*y0 && *y0 > topMargin){
                 (*y0)--;
             }
         }
@@ -212,7 +238,7 @@ void aiPaddleMovement(int *ballX, int *ballY,int x0, int *y0, int paddleHeight, 
 
 void aiPaddleCollision(int *ballX, int *ballY, int *ballDirX, int x0, int y0, int paddleHeight){
     //AI collision
-    if(*ballX==x0-1 && y0 <= *ballY && y0 + paddleHeight >= *ballY){
+    if(*ballX==x0-1 && y0 <= *ballY && y0 + paddleHeight -1 >= *ballY){
         *ballDirX *= -1;
         *ballX = x0-2;
     }
@@ -228,28 +254,28 @@ void drawMenu(int yMax, int xMax){
 
 void handleMenuInput(int ch, int *aiSpeed, int *menuRunning){
     if(ch == '1'){
-        *aiSpeed = 8;
-        *menuRunning = 0;
-    }
-    if(ch == '2'){
         *aiSpeed = 5;
         *menuRunning = 0;
     }
-    if(ch == '3'){
+    if(ch == '2'){
         *aiSpeed = 3;
         *menuRunning = 0;
     }
-    if(ch == '4'){
+    if(ch == '3'){
         *aiSpeed = 2;
+        *menuRunning = 0;
+    }
+    if(ch == '4'){
+        *aiSpeed = 1;
         *menuRunning = 0;
     }
 }
 
-void userPaddleMovement(int ch, int *y, int topMargin, int bottomMargin, int yMax, int paddleHeight){
+void userPaddleMovement(int ch, int *y, int topMargin, int bottomWall, int paddleHeight){
     if(ch == 'w' && *y>topMargin){
         (*y)--;
     }
-    if(ch == 's' && *y+paddleHeight<yMax-bottomMargin){
+    if(ch == 's' && *y+paddleHeight < bottomWall ){
         (*y)++;
     }
 }
@@ -258,4 +284,44 @@ void quitGame(int ch, int *running){
     if(ch == 'q'){
         *running = 0;
     }
+}
+
+void userNameFun(char *userName ,int yMax, int xMax ,int *userNameInput){
+    mvprintw(yMax/2 ,(xMax/2)-12 ,"Please enter your name:");
+    echo();
+    mvgetnstr((yMax/2) +1 , xMax/2,userName,19);
+    noecho();
+    *userNameInput = 0;
+}
+
+void scoring(int *ballX,int *ballY,int *ballDirX, int *ballDirY, int *userScore,int leftMargin, int rightMargin,  int xMax,int yMax, int *aiScore, char *userName){
+    if(*ballX >= xMax - rightMargin){
+
+        (*userScore)++;
+
+        *ballX =xMax/2;
+        *ballY =yMax/2;
+
+        *ballDirX = -1;
+        *ballDirY = 1;
+
+    }
+    if(*ballX <= leftMargin){
+        
+        (*aiScore)++;
+
+        *ballX =xMax/2;
+        *ballY =yMax/2;
+
+        *ballDirX = -1;
+        *ballDirY = 1;
+
+    }
+
+
+    mvprintw(1,(xMax/2)-10,"%s:%d",userName,*userScore);
+    
+    mvprintw(1,(xMax/2)-1,"vs");
+    
+    mvprintw(1,(xMax/2)+8,"AI:%d",*aiScore);
 }
